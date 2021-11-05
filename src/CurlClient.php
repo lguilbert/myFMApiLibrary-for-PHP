@@ -73,6 +73,18 @@ final class CurlClient
 
             $contentLength = mb_strlen($body);
         }
+        
+        /**
+         * Workaround for HTTP 502 issue on login, when body is empty.
+         * Set body to empty {}
+         * @see https://help.claris.com/en/data-api-guide/#connect-database_log-in
+         * @see https://github.com/myFMbutler/myFMApiLibrary-for-PHP/issues/11
+         * @fix by: https://github.com/gRegorLove
+         */
+        if ($method === 'POST' && isset($options['json']) && empty($options['json'])) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, '{}');
+            $contentLength = false;
+        }
 
         if (isset($options['file']) && !empty($options['file']) && $method === 'POST') {
             $cURLFile  = new \CURLFile($options['file']['path'], mime_content_type($options['file']['path']), $options['file']['name']);
